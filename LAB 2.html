@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Breeds Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button, input[type="text"] {
+            width: 50%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .results-box {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #000;
+    height: 100px;
+    width: 100%;
+    text-align: center;
+    line-height: 1.5; 
+    color: #000;
+    font-weight: 200;
+    border-radius: 5px;
+    overflow-y: auto; 
+    word-wrap: break-word; 
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <button onclick="loadCatNames()">All Names</button> 
+        <input type="text" placeholder="Health Issues" id="healthIssues">
+        <input type="button" value="Search by Health Issues" onclick="loadHealthIssues()">
+        <br>
+        
+        <div>
+            <label><input type="radio" id="imperial" name="unit" value="imperial" checked> Imperial</label>
+            <label><input type="radio" id="metric" name="unit" value="metric"> Metric</label>
+            <button onclick="loadCatWeights()">Weight</button>
+        </div>
+        <br><br>
+        
+        <button onclick="loadIntelligenceAndFriendly()">Intelligence - Friendly</button>
+        
+        <button onclick="loadAverageIntelligence()">Average Intelligence</button>
+        
+        <button onclick="loadAverageIntelligenceForFriendly()">Average Intelligence for Child Friendly = 4</button>
+        
+        <div class="results-box" id="resultsBox">
+            All Results should be displayed here.
+        </div>
+    </div>
+
+    <script>
+        const jsonUrl = "https://api.thecatapi.com/v1/breeds";
+
+        function loadCatNames() {
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    x.innerHTML = ""; 
+                    data.forEach(cat => {
+                        const name = document.createTextNode(cat.name);
+                        const lineBreak = document.createElement('br');
+                        x.appendChild(name);
+                        x.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => console.error('Error fetching cat names:', error));
+        }
+
+        function loadHealthIssues() {
+            const healthIssueNumber = document.getElementById('healthIssues').value;
+            if (healthIssueNumber) {
+                fetch(jsonUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        const x = document.getElementById('resultsBox');
+                        x.innerHTML = ""; 
+                        data.forEach(cat => {
+                            if (cat.health_issues == healthIssueNumber) {
+                                const name = document.createTextNode(cat.name);
+                                const lineBreak = document.createElement('br');
+                                x.appendChild(name);
+                                x.appendChild(lineBreak);
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error fetching health issues:', error));
+            }
+        }
+
+        function loadCatWeights() {
+            const isMetric = document.getElementById('metric').checked;
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    x.innerHTML = ""; 
+                    data.forEach(cat => {
+                        const weight = isMetric ? cat.weight.metric : cat.weight.imperial;
+                        const text = ` ${weight}`;
+                        const textNode = document.createTextNode(text);
+                        const lineBreak = document.createElement('br');
+                        x.appendChild(textNode);
+                        x.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => console.error('Error fetching weights:', error));
+        }
+
+        function loadIntelligenceAndFriendly() {
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    x.innerHTML = ""; 
+                    data.forEach(cat => {
+                        const text = `  ${cat.intelligence}: ${cat.child_friendly}`;
+                        const textNode = document.createTextNode(text);
+                        const lineBreak = document.createElement('br');
+                        x.appendChild(textNode);
+                        x.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => console.error('Error fetching intelligence and friendly factors:', error));
+        }
+
+        function loadAverageIntelligence() {
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    let totalIntelligence = 0;
+                    data.forEach(cat => {
+                        totalIntelligence += cat.intelligence;
+                    });
+                    const average = totalIntelligence / data.length;
+                    x.innerHTML = `Average Intelligence: ${average.toFixed(2)}`;
+                })
+                .catch(error => console.error('Error fetching average intelligence:', error));
+        }
+
+        function loadAverageIntelligenceForFriendly() {
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    let totalIntelligence = 0;
+                    let count = 0;
+                    data.forEach(cat => {
+                        if (cat.child_friendly == 4) {
+                            totalIntelligence += cat.intelligence;
+                            count++;
+                        }
+                    });
+                    const average = totalIntelligence / count;
+                    x.innerHTML = `Average Intelligence for Child Friendly Cats: ${average.toFixed(2)}`;
+                })
+                .catch(error => console.error('Error fetching average intelligence for child friendly:', error));
+        }
+    </script>
+
+</body>
+</html>
